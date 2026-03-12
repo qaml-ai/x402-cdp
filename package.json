@@ -1,0 +1,12 @@
+{
+  "name": "x402-cdp",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "index.ts",
+  "dependencies": {
+    "@coinbase/cdp-sdk": "^1.45.0",
+    "@x402/core": "^2.6.0",
+    "@x402/hono": "^2.6.0",
+    "@x402/evm": "^2.6.0"
+  }
+}
