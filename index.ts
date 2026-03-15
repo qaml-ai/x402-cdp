@@ -16,7 +16,17 @@
 
 import { HTTPFacilitatorClient } from "@x402/core/server";
 import { x402ResourceServer, paymentMiddleware } from "@x402/hono";
-import { registerExactEvmScheme as registerServerEvmScheme } from "@x402/evm/exact/server";
+import { ExactEvmScheme, registerExactEvmScheme as registerServerEvmScheme } from "@x402/evm/exact/server";
+import { registerExactSvmScheme as registerServerSvmScheme } from "@x402/svm/exact/server";
+
+// Patch ExactEvmScheme to add Polygon USDC (not in @x402/evm@2.6.0 defaults)
+const origGetDefaultAsset = ExactEvmScheme.prototype["getDefaultAsset"];
+ExactEvmScheme.prototype["getDefaultAsset"] = function (network: string) {
+  if (network === "eip155:137") {
+    return { address: "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359", name: "USD Coin", version: "2", decimals: 6 };
+  }
+  return origGetDefaultAsset.call(this, network);
+};
 import { generateJwt } from "@coinbase/cdp-sdk/auth";
 import type { MiddlewareHandler } from "hono";
 
@@ -84,6 +94,7 @@ export function cdpPaymentMiddleware(
 
       const resourceServer = new x402ResourceServer(facilitatorClient);
       registerServerEvmScheme(resourceServer);
+      registerServerSvmScheme(resourceServer);
 
       const routes = routesFactory(env);
       mw = paymentMiddleware(routes, resourceServer, undefined, undefined, false);
